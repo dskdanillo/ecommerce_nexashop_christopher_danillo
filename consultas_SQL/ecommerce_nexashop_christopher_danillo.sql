@@ -346,6 +346,53 @@ percentual), mas agora com GROUP BY forma_pagamento, então a taxa de cancelamen
 sai calculada separadamente pra cada meio de pagamento. O ORDER BY DESC já deixa
 o meio com maior cancelamento no topo, facilitando checar se é mesmo o boleto.
 
+Bloco 6 — Ponte para a próxima aula (sem SQL)
+Durante a atividade, é comum que alguma dupla tente responder "quais cidades geram mais faturamento para a NexaShop?" e perceba que não consegue resolver isso com uma única tabela: a cidade está em clientes, o faturamento está em pedidos.
+Tarefa 6.1 — Uma pergunta que ainda não conseguimos responder
+Tarefa: No relatório, escrevam: (a) qual pergunta de negócio a dupla tentou responder e não conseguiu resolver com uma tabela só; (b) em qual tabela está cada informação necessária; (c) por que, na opinião da dupla, é necessário combinar as duas tabelas para responder.
+Evidência esperada: Um parágrafo claro que identifica corretamente a limitação atual (tabelas separadas) e antecipa, com as próprias palavras da dupla, a necessidade de uma operação de junção — que será o tema da próxima aula.
+
+O que tentamos fazer
+
+Tentamos montar, em uma única consulta, o nome do cliente ao lado da nota e do comentário da avaliação, ligando isso também ao pedido e ao produto. A primeira tentativa partiu da tabela produtos e misturou nomes de tabela e de coluna incorretamente:
+Select
+produto.nome As nome_do_produto,
+pedido_id As pedido_id
+from produtos
+INNER join produto on produto.pedido_id = nome.produto;
+
+Erros identificados:
+• Tabela chamada ora "produtos" (no FROM), ora "produto" (no SELECT e no JOIN) — nomes inconsistentes.
+• INNER JOIN produto tenta juntar a tabela produtos com ela mesma, em vez de com pedidos.
+• A condição "nome.produto" não compara coluna com coluna — não faz sentido no ON.
+• A causa raiz: a tabela produtos não tem coluna pedido_id, porque um produto pode aparecer em vários pedidos diferentes — a informação de "quem comprou o quê" mora em pedidos, não em produtos.
+A versão correta
+Ligando avaliações → pedidos → clientes (cada avaliação pertence a um pedido, e cada pedido pertence a um cliente):
+
+
+
+
+SELECT
+    clientes.nome AS nome_cliente,
+    avaliacoes.nota,
+    avaliacoes.comentario,
+    avaliacoes.data_avaliacao,
+    pedidos.id AS pedido_id
+FROM
+    avaliacoes
+INNER JOIN pedidos  ON avaliacoes.pedido_id = pedidos.id
+INNER JOIN clientes ON pedidos.cliente_id   = clientes.id;
+
+
+Cada tabela contribui com uma peça: avaliações tem a nota e o comentário; pedidos é a ponte, guardando tanto pedido_id (que liga à avaliação) quanto cliente_id (que liga ao cliente); clientes tem o nome. Nenhuma tabela sozinha tem as três informações juntas.
+Explicação resumida do JOIN
+O INNER JOIN junta linhas de duas tabelas comparando um valor de uma coluna com um valor de outra, definido no ON. Só entram no resultado as linhas em que essa comparação é verdadeira (match); se um pedido não tiver avaliação, ou uma avaliação apontar para um pedido inexistente, essa linha simplesmente não aparece. O SQL não "entende" a relação entre as tabelas — ele só compara números que já foram gravados nas colunas (chave estrangeira = chave primária) no momento em que os dados foram inseridos. A ordem real de execução é: primeiro monta o FROM, depois aplica cada JOIN em sequência, e só por último filtra as colunas do SELECT.
+ENTENDENDO O ROTEIRO DO JOIN e ON
+A primeira tabela principal da sua consulta.
+INNER JOIN [tabela2]: O nome da segunda tabela que você quer juntar e buscar dados relacionados.
+ON [tabela1].[coluna_id] = [tabela2].[coluna_estrangeira]: A condição de igualdade. É a coluna que existe nas duas tabelas e que mostra qual linha da tabela 1 pertence a qual linha da tabela 2.
+
+
 
 
 
