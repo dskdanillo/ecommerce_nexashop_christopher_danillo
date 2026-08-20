@@ -67,6 +67,11 @@ order by categoria;
 FROM produtos
 GROUP BY categoria;*/
 
+Explicação: Retorna categorias únicas da tabela produtos, ordenadas em ordem alfabética.
+DISTINCT elimina categorias repetidas, então cada nome aparece só uma
+vez no resultado. O ORDER BY organiza essa lista em ordem alfabética. Não conta
+quantidade, só mostra as categorias únicas
+Pra contar teria que usar COUNT(DISTINCT categoria).
 /*--------------------------------------------------------------*/
 
 /* Tarefa 2.1 — Clientes ativos da região Sul
@@ -79,6 +84,11 @@ FROM clientes
 WHERE status = 'Ativo' AND estado IN ('SC', 'PR', 'RS')
 ORDER BY estado, nome;
 
+Explicação: Seleciona clientes ativos do Sul e ordena por estado e nome.
+O WHERE filtra só clientes com status 'Ativo', e o IN funciona como um
+"OR" simplificado pra pegar os três estados da região Sul de uma vez. O AND une os
+dois filtros, e o ORDER BY estado, nome ordena primeiro por estado e, dentro d o
+mesmo estado, por nome (ordenação em duas colunas).
 /*--------------------------------------------------------------*/
 /*Tarefa 2.2 — Busca de cliente por nome (tela de atendimento)
 Contexto: O atendimento recebe do cliente apenas parte do nome.
@@ -100,6 +110,10 @@ SELECT nome, email, cidade, estado
 FROM clientes
 WHERE telefone IS NULL;
 
+
+Explicação: O IS NULL filtra exatamente os registros que não
+têm telefone preenchido, que é o público-alvo da campanha por e-mail.
+
 /*--------------------------------------------------------------*/
 
 /*arefa 2.5 — Alerta de reposição de estoque
@@ -112,6 +126,11 @@ SELECT nome, categoria, estoque
 FROM produtos
 WHERE ativo = 1 AND estoque < 10
 ORDER BY estoque ASC;
+
+Explicação: WHERE com duas condições (produto ativo e estoque abaixo de 10) ligadas
+por AND, então as duas precisam ser verdadeiras ao mesmo tempo. ORDER BY estoque ASC
+é o padrão do ORDER BY, mas deixar o ASC explícito reforça que é crescente —
+os itens mais críticos (estoque menor) aparecem primeiro.
 
 /*Bloco 3 — Indicadores agregados
 Recursos praticados: COUNT, SUM, AVG, MIN, MAX, GROUP BY, HAVING, TIMESTAMPDIFF
@@ -129,6 +148,11 @@ MAX(valor_total) AS maior_valor
 FROM pedidos
 WHERE status = 'Aprovado';
 
+Explicação: Junta quatro funções agregadoras numa consulta só — COUNT conta as
+linhas, AVG tira a média (com ROUND arredondando pra 2 casas decimais), e MIN/MAX
+pegam os extremos. O WHERE filtra pra considerar só pedidos aprovados antes de agregar,
+então o cálculo não mistura pedidos cancelados ou pendentes.
+
 /*--------------------------------------------------------------*/
 /*Tarefa 3.3 — Onde estão os clientes da NexaShop
 Tarefa: Mostre a quantidade de clientes por estado, ordenando do estado com mais clientes 
@@ -138,6 +162,10 @@ SELECT estado, COUNT(id) AS quantidade_clientes
 FROM clientes
 GROUP BY estado
 ORDER BY quantidade_clientes DESC;
+
+Explicação: (GROUP BY estado) agrupa todos os clientes por estado e o COUNT conta
+quantos caem em cada grupo. O ORDER BY quantidade_clientes DESC ordena do estado com
+mais clientes pro com menos.
 
 /*--------------------------------------------------------------------*/
 /*Tarefa 3.5 — Perfil etário por segmento de cliente
@@ -152,6 +180,11 @@ GROUP BY segmento;
 TIMESTAMPDIFF(YEAR, data_nascimento, NOW())Essa função calcula a diferença de tempo entre duas datas. 
 Ela precisa de 3 informações:YEAR: Diz que você quer o resultado em Anos (a idade da pessoa).data_nascimento: 
 A data antiga (quando o cliente nasceu).NOW(): A data atual (o dia de hoje no relógio do computador).*/
+
+Explicação: TIMESTAMPDIFF calcula a idade de cada cliente em anos na hora da consulta
+(NOW() traz a data atual). Isso vira o "DAdo" que entra dentro do AVG, então a
+média é calculada em cima da idade calculada, e o GROUP BY segmento separa esse
+cálculo por Varejo, Atacado e Corporativo.
 
 /*-------------------------------------------------------------------*/
 
@@ -186,6 +219,10 @@ SELECT id, pedido_id, nota, comentario,
        END AS classificacao_avaliacao
 FROM avaliacoes;
 
+Explicação: CASE funciona tipo um if/else dentro do SELECT — testa cada WHEN em
+ordem e, no primeiro que bater, atribui o valor do THEN. Não altera os dados da
+tabela, só cria uma coluna nova com o AS (classificacao_avaliacao).
+
 /*-----------------------------------------------------*/
 
 /*Tarefa 4.2 — Quantas avaliações caem em cada faixa
@@ -218,6 +255,11 @@ taxas sem subconsulta, muito usada em relatórios de mercado..*/
 SELECT 
     ROUND(AVG(CASE WHEN status = 'Aprovado' THEN 1 ELSE 0 END) * 100, 2) AS taxa_aprovacao_percentual
 FROM pedidos;
+
+Explicação: CASE transforma cada linha em 1 (se for aprovado) ou 0 (se não for), 
+e o AVG desses 0 e 1 dá exatamente a proporção de aprovados.
+Multiplicar por 100 vira percentual, e o ROUND arredonda em 2 casas. Isso evita
+fazer duas consultas separadas (total e aprovados) e depois dividir.
 
 /*------------------------------------------------*/
 /*Tarefa 4.4 — Perfil de relacionamento dos clientes
@@ -257,6 +299,11 @@ HAVING quantidade_pedidos >= 200
 ORDER BY faturamento DESC
 LIMIT 5;
 
+Explicação: Consulta completa combinando quase tudo. WHERE filtra antes de agrupar
+(só aprovados), GROUP BY em duas colunas cria um grupo pra cada combinação
+canal+pagamento, e o HAVING filtra os grupos já agregados (diferente do WHERE,
+que não enxerga COUNT/SUM). ORDER BY + LIMIT 5 pegam só o top 5 por faturamento.
+
 /*------------------------------------------------------*/
 /*Tarefa 5.2 — Categorias "premium" do catálogo
 Tarefa: Entre os produtos ativos, mostre categoria, quantidade de produtos e preço médio, 
@@ -288,6 +335,11 @@ ROUND(AVG(CASE WHEN status = 'Cancelado' THEN 1 ELSE 0 END) * 100, 2) AS taxa_ca
 FROM pedidos
 GROUP BY forma_pagamento
 ORDER BY taxa_cancelamento_percentual DESC;
+
+Explicação: mesma técnica da 4.3 (CASE virando 0/1 dentro do AVG pra achar
+percentual), mas agora com GROUP BY forma_pagamento, então a taxa de cancelamento
+sai calculada separadamente pra cada meio de pagamento. O ORDER BY DESC já deixa
+o meio com maior cancelamento no topo, facilitando checar se é mesmo o boleto.
 
 
 
