@@ -14,6 +14,9 @@ UNION ALL
 SELECT
 'avaliacoes' AS tabela, COUNT(*) AS total FROM avaliacoes;
 
+Explicação: Os comandos a cima mostra uma tabela, sem filtro nenhum.
+O SELECT * traz todas as colunas e o LIMIT 10 segura o resultado pra não
+despejar a tabela inteira na tela.
 
 /*------------------------------------------------------------*/
 -- Bloco 1 — Reconhecimento do banco
