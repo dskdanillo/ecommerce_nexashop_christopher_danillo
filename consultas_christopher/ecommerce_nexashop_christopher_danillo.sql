@@ -307,3 +307,22 @@ order by preco_medio desc;
 -- marketing quais linhas de produto merecem uma comunicação mais
 -- sofisticada, voltada a um público disposto a pagar um ticket mais alto.
 
+-- Solução com JOIN (preview / bônus — não faz parte da entrega oficial,
+-- já que JOIN ainda não foi ensinado na atividade)
+--
+-- Pergunta: Quais categorias de produto concentram mais avaliações ruins?
+--
+-- São necessários 2 JOINs para conectar as 3 tabelas em cadeia:
+--   avaliacoes --(pedido_id)--> pedidos --(produto_id)--> produtos
+
+SELECT
+    p.categoria,
+    COUNT(*) AS quantidade_avaliacoes_ruins
+FROM avaliacoes AS a
+JOIN pedidos AS pe
+    ON a.pedido_id = pe.id
+JOIN produtos AS p
+    ON pe.produto_id = p.id
+WHERE a.nota IN (1, 2)
+GROUP BY p.categoria
+ORDER BY quantidade_avaliacoes_ruins DESC;
